@@ -8,6 +8,7 @@ authors = ["Your Name <your.email@example.com>"]
 python = "^3.8"
 aiohttp = "^3.8.1"  # Make sure this line is present
 asyncio = "^3.4.3"
+flask = "^3.0.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

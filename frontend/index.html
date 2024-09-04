@@ -1,0 +1,70 @@
+<!-- Path: frontend/index.html -->
+<!-- This is our main web page for the Song Writer AI project -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Writer AI</title>
+    <!-- We're using Tailwind CSS to make our page look nice -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+        <div class="p-8">
+            <h1 class="text-2xl font-bold mb-4">🎵 Song Writer AI 🤖</h1>
+            
+            <!-- This is where we type our song theme -->
+            <input type="text" id="themeInput" placeholder="Enter a theme for your song" class="w-full p-2 border rounded mb-4">
+            
+            <!-- This button starts the song writing process -->
+            <button id="generateButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Write a Song!</button>
+            
+            <!-- This is where we'll see our song being created -->
+            <div id="output" class="mt-4 p-4 bg-gray-100 rounded"></div>
+        </div>
+    </div>
+
+    <script>
+        // This is where we tell the computer what to do
+        
+        // We're getting ready to use our button and text box
+        const generateButton = document.getElementById('generateButton');
+        const themeInput = document.getElementById('themeInput');
+        const output = document.getElementById('output');
+
+        // When we click the button, this is what happens
+        generateButton.addEventListener('click', async () => {
+    const theme = themeInput.value;
+    
+    output.innerHTML = `<p>🎨 Starting to write a song about "${theme}"...</p>`;
+
+    try {
+        const response = await fetch('/write_song', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ theme }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Something went wrong');
+        }
+
+        const data = await response.json();
+
+        output.innerHTML += `
+            <p class="mt-4"><strong>📝 Lyrics:</strong></p>
+            <pre class="whitespace-pre-wrap">${data.lyrics || 'No lyrics generated'}</pre>
+            <p class="mt-4"><strong>🎵 Melody:</strong></p>
+            <pre class="whitespace-pre-wrap">${data.melody || 'No melody generated'}</pre>
+        `;
+    } catch (error) {
+        output.innerHTML += `<p class="text-red-500">Oops! Something went wrong: ${error.message}</p>`;
+    }
+});
+    </script>
+</body>
+</html>

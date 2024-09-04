@@ -22,7 +22,10 @@ class SongWriter:
         melody = await self.composer.adjust_melody(melody, "Add more rhythm")
         
         # 🎶 Step 4: Put it all together
-        song = f"Lyrics:\n\n{lyrics}\n\nMelody:\n\n{melody}"
+        song = {
+            "lyrics": lyrics,
+            "melody": melody
+        }
         logging.info(f"Created song with theme '{theme}': {song}")
         
         return song

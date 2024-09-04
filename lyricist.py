@@ -11,7 +11,7 @@ class Lyricist:
 
     async def generate_lyrics(self, theme):
         # 💡 Ask our AI to write lyrics
-        prompt = f"Write lyrics for a song about {theme}. Make it 2 verses and a chorus."
+        prompt = f"Write lyrics for a song about {theme}. Make a song structure that is fitting for the genre of the subject matter, clearly [Label] each section."
         response = await self.ollama.generate(prompt)  # Use the generate method
         
         # ✨ Clean up the lyrics
