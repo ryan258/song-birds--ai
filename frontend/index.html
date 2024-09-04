@@ -1,13 +1,9 @@
-<!-- Path: frontend/index.html -->
-<!-- This is our main web page for the Song Writer AI project -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Song Writer AI</title>
-    <!-- We're using Tailwind CSS to make our page look nice -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 p-8">
@@ -15,56 +11,97 @@
         <div class="p-8">
             <h1 class="text-2xl font-bold mb-4">🎵 Song Writer AI 🤖</h1>
             
-            <!-- This is where we type our song theme -->
-            <input type="text" id="themeInput" placeholder="Enter a theme for your song" class="w-full p-2 border rounded mb-4">
+            <div id="initialForm">
+                <input type="text" id="themeInput" placeholder="Enter a theme for your song" class="w-full p-2 border rounded mb-4">
+                <button id="generateButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Write Initial Draft</button>
+            </div>
             
-            <!-- This button starts the song writing process -->
-            <button id="generateButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Write a Song!</button>
+            <div id="refinementForm" class="hidden">
+                <input type="text" id="lyricsRefinement" placeholder="Lyrics refinement (e.g., Make it more upbeat)" class="w-full p-2 border rounded mb-4">
+                <input type="text" id="melodyAdjustment" placeholder="Melody adjustment (e.g., Add more rhythm)" class="w-full p-2 border rounded mb-4">
+                <button id="refineButton" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Refine Song</button>
+            </div>
             
-            <!-- This is where we'll see our song being created -->
             <div id="output" class="mt-4 p-4 bg-gray-100 rounded"></div>
         </div>
     </div>
 
     <script>
-        // This is where we tell the computer what to do
-        
-        // We're getting ready to use our button and text box
+        const initialForm = document.getElementById('initialForm');
+        const refinementForm = document.getElementById('refinementForm');
         const generateButton = document.getElementById('generateButton');
+        const refineButton = document.getElementById('refineButton');
         const themeInput = document.getElementById('themeInput');
+        const lyricsRefinement = document.getElementById('lyricsRefinement');
+        const melodyAdjustment = document.getElementById('melodyAdjustment');
         const output = document.getElementById('output');
 
-        // When we click the button, this is what happens
         generateButton.addEventListener('click', async () => {
-    const theme = themeInput.value;
-    
-    output.innerHTML = `<p>🎨 Starting to write a song about "${theme}"...</p>`;
+            const theme = themeInput.value;
+            
+            output.innerHTML = `<p>🎨 Starting to write a song about "${theme}"...</p>`;
 
-    try {
-        const response = await fetch('/write_song', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ theme }),
+            try {
+                const response = await fetch('/write_initial_draft', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ theme }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('Something went wrong');
+                }
+
+                const data = await response.json();
+
+                output.innerHTML += `
+                    <p class="mt-4"><strong>📝 Initial Lyrics:</strong></p>
+                    <pre class="whitespace-pre-wrap">${data.lyrics || 'No lyrics generated'}</pre>
+                    <p class="mt-4"><strong>🎵 Initial Melody:</strong></p>
+                    <pre class="whitespace-pre-wrap">${data.melody || 'No melody generated'}</pre>
+                `;
+
+                initialForm.classList.add('hidden');
+                refinementForm.classList.remove('hidden');
+            } catch (error) {
+                output.innerHTML += `<p class="text-red-500">Oops! Something went wrong: ${error.message}</p>`;
+            }
         });
 
-        if (!response.ok) {
-            throw new Error('Something went wrong');
-        }
+        refineButton.addEventListener('click', async () => {
+            const theme = themeInput.value;
+            const lyricsRefine = lyricsRefinement.value || "Make it more upbeat";
+            const melodyAdjust = melodyAdjustment.value || "Add more rhythm";
+            
+            output.innerHTML += `<p>🔄 Refining the song...</p>`;
 
-        const data = await response.json();
+            try {
+                const response = await fetch('/refine_song', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ theme, lyricsRefine, melodyAdjust }),
+                });
 
-        output.innerHTML += `
-            <p class="mt-4"><strong>📝 Lyrics:</strong></p>
-            <pre class="whitespace-pre-wrap">${data.lyrics || 'No lyrics generated'}</pre>
-            <p class="mt-4"><strong>🎵 Melody:</strong></p>
-            <pre class="whitespace-pre-wrap">${data.melody || 'No melody generated'}</pre>
-        `;
-    } catch (error) {
-        output.innerHTML += `<p class="text-red-500">Oops! Something went wrong: ${error.message}</p>`;
-    }
-});
+                if (!response.ok) {
+                    throw new Error('Something went wrong');
+                }
+
+                const data = await response.json();
+
+                output.innerHTML += `
+                    <p class="mt-4"><strong>📝 Refined Lyrics:</strong></p>
+                    <pre class="whitespace-pre-wrap">${data.lyrics || 'No lyrics generated'}</pre>
+                    <p class="mt-4"><strong>🎵 Refined Melody:</strong></p>
+                    <pre class="whitespace-pre-wrap">${data.melody || 'No melody generated'}</pre>
+                `;
+            } catch (error) {
+                output.innerHTML += `<p class="text-red-500">Oops! Something went wrong: ${error.message}</p>`;
+            }
+        });
     </script>
 </body>
 </html>

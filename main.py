@@ -7,25 +7,25 @@ from composer import Composer
 from ollama import Ollama
 from flask import Flask, request, jsonify, send_from_directory
 
-
 app = Flask(__name__, static_folder='frontend')
 
-# 🤖 Our AI assistant class
 class AIAssistant:
     def __init__(self):
-        # 🔧 Set up our Ollama model
         self.ollama = Ollama(model="llama3.1:latest")
-        
-        # 👥 Create our team of agents
         self.lyricist = Lyricist(self.ollama)
         self.composer = Composer(self.ollama)
         self.song_writer = SongWriter(self.lyricist, self.composer)
 
-    async def write_song(self, theme):
-        # 🎶 Let's make some music!
-        print(f"🌟 Starting to write a song about {theme}!")
-        song = await self.song_writer.create_song(theme)
-        print("🎉 Song is ready!")
+    async def write_initial_draft(self, theme):
+        print(f"🌟 Starting to write an initial draft about {theme}!")
+        song = await self.song_writer.create_initial_draft(theme)
+        print("📝 Initial draft is ready!")
+        return song
+
+    async def refine_song(self, theme, lyrics_refine, melody_adjust):
+        print(f"🔄 Refining the song about {theme}!")
+        song = await self.song_writer.refine_song(theme, lyrics_refine, melody_adjust)
+        print("🎉 Refined song is ready!")
         return song
 
 assistant = AIAssistant()
@@ -34,17 +34,24 @@ assistant = AIAssistant()
 def index():
     return send_from_directory('frontend', 'index.html')
 
-@app.route('/write_song', methods=['POST'])
-def write_song():
-    theme = request.json['theme']
-    song = asyncio.run(assistant.write_song(theme))
-    # Ensure song is a dictionary with 'lyrics' and 'melody' keys
-    if isinstance(song, str):
-        # If song is a single string, split it into lyrics and melody
-        parts = song.split("\n\nMelody:\n\n")
-        lyrics = parts[0].replace("Lyrics:\n\n", "")
-        melody = parts[1] if len(parts) > 1 else "Melody not provided"
-        song = {"lyrics": lyrics, "melody": melody}
+@app.route('/write_initial_draft', methods=['POST'])
+def write_initial_draft():
+    data = request.json
+    theme = data['theme']
+    
+    song = asyncio.run(assistant.write_initial_draft(theme))
+    
+    return jsonify(song)
+
+@app.route('/refine_song', methods=['POST'])
+def refine_song():
+    data = request.json
+    theme = data['theme']
+    lyrics_refine = data.get('lyricsRefine', "Make it more upbeat")
+    melody_adjust = data.get('melodyAdjust', "Add more rhythm")
+    
+    song = asyncio.run(assistant.refine_song(theme, lyrics_refine, melody_adjust))
+    
     return jsonify(song)
 
 if __name__ == "__main__":
