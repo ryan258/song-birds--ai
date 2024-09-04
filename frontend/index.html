@@ -38,15 +38,29 @@
 
         let refinementCount = 0;
 
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            }, (err) => {
+                console.error('Could not copy text: ', err);
+            });
+        }
+
         function addDraftToOutput(title, lyrics, melody) {
             const draftElement = document.createElement('div');
             draftElement.className = 'p-4 bg-gray-100 rounded mb-4';
             draftElement.innerHTML = `
                 <h3 class="font-bold">${title}:</h3>
-                <p class="mt-2"><strong>📝 Lyrics:</strong></p>
-                <pre class="whitespace-pre-wrap">${lyrics || 'No lyrics generated'}</pre>
-                <p class="mt-2"><strong>🎵 Melody:</strong></p>
-                <pre class="whitespace-pre-wrap">${melody || 'No melody generated'}</pre>
+                <div class="mt-2">
+                    <strong>📝 Lyrics:</strong>
+                    <button class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy Lyrics</button>
+                    <pre class="whitespace-pre-wrap mt-1">${lyrics || 'No lyrics generated'}</pre>
+                </div>
+                <div class="mt-2">
+                    <strong>🎵 Melody:</strong>
+                    <button class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy Melody</button>
+                    <pre class="whitespace-pre-wrap mt-1">${melody || 'No melody generated'}</pre>
+                </div>
             `;
             output.insertBefore(draftElement, output.firstChild);
         }
