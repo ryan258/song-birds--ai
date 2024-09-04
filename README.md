@@ -1,6 +1,6 @@
-# 🎵 Multi-Agent Song Writing AI 🤖
+# 🎵 Song Writer AI 🤖
 
-Welcome to the Multi-Agent Song Writing AI project! This creative system uses multiple AI agents working together to compose original songs. It's like having a virtual band of AI musicians collaborating on your computer! 🎸🥁🎹
+Welcome to the Song Writer AI project! This creative system uses multiple AI agents working together to compose original songs. It's like having a virtual band of AI musicians collaborating on your computer!
 
 ## 📚 Project Overview
 
@@ -9,16 +9,14 @@ Our AI songwriting team consists of:
 - 🎼 A Composer who creates the melody
 - 🎵 A SongWriter who coordinates the entire process
 
-These agents use the Ollama AI model (llama3.1:latest) to generate creative content.
+These agents use the Ollama AI model to generate creative content.
 
-## 🗂️ Project Structure
+## 🎨 Features
 
-- `main.py`: The entry point of our application, setting up the AI Assistant.
-- `ollama.py`: Defines the Ollama class for interfacing with the Ollama API.
-- `lyricist.py`: Contains the Lyricist class for generating and refining lyrics.
-- `composer.py`: Houses the Composer class for creating and adjusting melodies.
-- `song_writer.py`: Implements the SongWriter class to coordinate the songwriting process.
-- `pyproject.toml`: Manages project dependencies and metadata using Poetry.
+- Generate initial song drafts based on user-provided themes
+- Refine lyrics and melodies iteratively
+- Display song drafts in reverse chronological order
+- Copy lyrics and melodies to clipboard with a single click
 
 ## 🛠️ Setup Instructions
 
@@ -39,8 +37,8 @@ curl -sSL https://install.python-poetry.org | python3 -
 ### Step 2: Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/multi-agent-song-writing-ai.git
-cd multi-agent-song-writing-ai
+git clone https://github.com/your-username/song-writer-ai.git
+cd song-writer-ai
 ```
 
 ### Step 3: Install Dependencies
@@ -62,31 +60,36 @@ This will create a virtual environment and install all the necessary dependencie
 ollama run llama3.1:latest
 ```
 
-Make sure to keep this running in a separate terminal window while using the song writing AI.
+Make sure to keep this running in a separate terminal window while using the Song Writer AI.
 
-### Step 5: Run the Project
+## 🚀 Usage
 
-Activate the Poetry environment:
-
-```bash
-poetry shell
-```
-
-Then run the main script:
+1. Start the application:
 
 ```bash
-python main.py
+poetry run python main.py
 ```
 
-## 🎉 Usage
+2. Open a web browser and go to `http://localhost:5000`.
 
-When you run the main script, the AI will write a song about friendship. You can change the theme by modifying the `theme` parameter in the `assistant.write_song()` call within the `main()` function in `main.py`.
+3. Enter a theme for your song and click "Write Initial Draft".
 
-## 🔧 Customization
+4. Once the initial draft is generated, you can refine the song by entering instructions for lyrics refinement and melody adjustment.
 
-- To use a different Ollama model, modify the model name in the `Ollama` class instantiation in `main.py`.
-- Adjust the prompts in `lyricist.py` and `composer.py` to guide the AI's creative direction.
-- Modify the `SongWriter` class in `song_writer.py` to change the song creation process.
+5. Click "Refine Song" to generate a new version based on your instructions.
+
+6. You can continue refining the song multiple times, with each new version appearing at the top of the page.
+
+7. Use the "Copy Lyrics" and "Copy Melody" buttons to easily copy parts of your song to the clipboard.
+
+## 📝 Project Structure
+
+- `main.py`: The entry point of our application, setting up the AI Assistant and Flask server.
+- `ollama.py`: Defines the Ollama class for interfacing with the Ollama API.
+- `lyricist.py`: Contains the Lyricist class for generating and refining lyrics.
+- `composer.py`: Houses the Composer class for creating and adjusting melodies.
+- `song_writer.py`: Implements the SongWriter class to coordinate the songwriting process.
+- `frontend/index.html`: The web interface for interacting with the Song Writer AI.
 
 ## 🤝 Contributing
 
