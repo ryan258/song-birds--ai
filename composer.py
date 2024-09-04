@@ -1,4 +1,8 @@
 # 🎼 File: composer.py 🎼
+import logging
+from logger import setup_logger
+
+setup_logger()
 
 class Composer:
     def __init__(self, ollama):
@@ -13,6 +17,7 @@ class Composer:
         melody = response.strip()
         
         print("🎶 Melody is composed!")
+        logging.info(f"Created melody for lyrics: {melody}")
         return melody
 
     async def adjust_melody(self, melody, feedback):
@@ -23,4 +28,6 @@ class Composer:
         adjusted_melody = response.strip()
         
         print("🎵 Melody has been fine-tuned!")
+        logging.info(f"Adjusted melody based on feedback '{feedback}': {adjusted_melody}")
+        
         return adjusted_melody

@@ -27,7 +27,7 @@ class AIAssistant:
 # 🚀 Main function to run our program
 async def main():
     assistant = AIAssistant()
-    song = await assistant.write_song("friendship")
+    song = await assistant.write_song("giving penguins the business")
     print("📜 Here's our song:")
     print(song)
 

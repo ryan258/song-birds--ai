@@ -1,4 +1,8 @@
 # 📝 File: lyricist.py 📝
+import logging
+from logger import setup_logger
+
+setup_logger()
 
 class Lyricist:
     def __init__(self, ollama):
@@ -14,6 +18,8 @@ class Lyricist:
         lyrics = response.strip()
         
         print("✏️ Lyrics are ready!")
+        logging.info(f"Generated lyrics for theme '{theme}': {lyrics}")
+
         return lyrics
 
     async def refine_lyrics(self, lyrics, feedback):
@@ -24,4 +30,5 @@ class Lyricist:
         refined_lyrics = response.strip()
         
         print("🎨 Lyrics have been polished!")
+        logging.info(f"Refined lyrics based on feedback '{feedback}': {refined_lyrics}")
         return refined_lyrics

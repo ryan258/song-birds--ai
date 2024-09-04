@@ -1,4 +1,8 @@
 # 🎸 File: song_writer.py 🎸
+import logging
+from logger import setup_logger
+
+setup_logger()
 
 class SongWriter:
     def __init__(self, lyricist, composer):
@@ -19,5 +23,6 @@ class SongWriter:
         
         # 🎶 Step 4: Put it all together
         song = f"Lyrics:\n\n{lyrics}\n\nMelody:\n\n{melody}"
+        logging.info(f"Created song with theme '{theme}': {song}")
         
         return song
