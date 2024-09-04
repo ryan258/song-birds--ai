@@ -15,18 +15,22 @@ class AIAssistant:
         self.lyricist = Lyricist(self.ollama)
         self.composer = Composer(self.ollama)
         self.song_writer = SongWriter(self.lyricist, self.composer)
+        self.current_song = None
 
     async def write_initial_draft(self, theme):
         print(f"🌟 Starting to write an initial draft about {theme}!")
-        song = await self.song_writer.create_initial_draft(theme)
+        self.current_song = await self.song_writer.create_initial_draft(theme)
         print("📝 Initial draft is ready!")
-        return song
+        return self.current_song
 
     async def refine_song(self, theme, lyrics_refine, melody_adjust):
+        if not self.current_song:
+            raise ValueError("No initial draft to refine. Please create an initial draft first.")
+        
         print(f"🔄 Refining the song about {theme}!")
-        song = await self.song_writer.refine_song(theme, lyrics_refine, melody_adjust)
+        self.current_song = await self.song_writer.refine_song(self.current_song, lyrics_refine, melody_adjust)
         print("🎉 Refined song is ready!")
-        return song
+        return self.current_song
 
 assistant = AIAssistant()
 
@@ -50,9 +54,11 @@ def refine_song():
     lyrics_refine = data.get('lyricsRefine', "Make it more upbeat")
     melody_adjust = data.get('melodyAdjust', "Add more rhythm")
     
-    song = asyncio.run(assistant.refine_song(theme, lyrics_refine, melody_adjust))
-    
-    return jsonify(song)
+    try:
+        song = asyncio.run(assistant.refine_song(theme, lyrics_refine, melody_adjust))
+        return jsonify(song)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
 if __name__ == "__main__":
     app.run(debug=True)

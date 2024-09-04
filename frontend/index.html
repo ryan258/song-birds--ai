@@ -22,7 +22,7 @@
                 <button id="refineButton" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Refine Song</button>
             </div>
             
-            <div id="output" class="mt-4 p-4 bg-gray-100 rounded"></div>
+            <div id="output" class="mt-4"></div>
         </div>
     </div>
 
@@ -36,10 +36,27 @@
         const melodyAdjustment = document.getElementById('melodyAdjustment');
         const output = document.getElementById('output');
 
+        let refinementCount = 0;
+
+        function addDraftToOutput(title, lyrics, melody) {
+            const draftElement = document.createElement('div');
+            draftElement.className = 'p-4 bg-gray-100 rounded mb-4';
+            draftElement.innerHTML = `
+                <h3 class="font-bold">${title}:</h3>
+                <p class="mt-2"><strong>📝 Lyrics:</strong></p>
+                <pre class="whitespace-pre-wrap">${lyrics || 'No lyrics generated'}</pre>
+                <p class="mt-2"><strong>🎵 Melody:</strong></p>
+                <pre class="whitespace-pre-wrap">${melody || 'No melody generated'}</pre>
+            `;
+            output.insertBefore(draftElement, output.firstChild);
+        }
+
         generateButton.addEventListener('click', async () => {
             const theme = themeInput.value;
             
-            output.innerHTML = `<p>🎨 Starting to write a song about "${theme}"...</p>`;
+            const loadingElement = document.createElement('div');
+            loadingElement.textContent = `🎨 Starting to write a song about "${theme}"...`;
+            output.insertBefore(loadingElement, output.firstChild);
 
             try {
                 const response = await fetch('/write_initial_draft', {
@@ -56,17 +73,17 @@
 
                 const data = await response.json();
 
-                output.innerHTML += `
-                    <p class="mt-4"><strong>📝 Initial Lyrics:</strong></p>
-                    <pre class="whitespace-pre-wrap">${data.lyrics || 'No lyrics generated'}</pre>
-                    <p class="mt-4"><strong>🎵 Initial Melody:</strong></p>
-                    <pre class="whitespace-pre-wrap">${data.melody || 'No melody generated'}</pre>
-                `;
+                output.removeChild(loadingElement);
+                addDraftToOutput('Initial Draft', data.lyrics, data.melody);
 
                 initialForm.classList.add('hidden');
                 refinementForm.classList.remove('hidden');
             } catch (error) {
-                output.innerHTML += `<p class="text-red-500">Oops! Something went wrong: ${error.message}</p>`;
+                output.removeChild(loadingElement);
+                const errorElement = document.createElement('p');
+                errorElement.className = 'text-red-500';
+                errorElement.textContent = `Oops! Something went wrong: ${error.message}`;
+                output.insertBefore(errorElement, output.firstChild);
             }
         });
 
@@ -75,7 +92,11 @@
             const lyricsRefine = lyricsRefinement.value || "Make it more upbeat";
             const melodyAdjust = melodyAdjustment.value || "Add more rhythm";
             
-            output.innerHTML += `<p>🔄 Refining the song...</p>`;
+            refinementCount++;
+
+            const loadingElement = document.createElement('div');
+            loadingElement.textContent = `🔄 Refining the song (Refinement #${refinementCount})...`;
+            output.insertBefore(loadingElement, output.firstChild);
 
             try {
                 const response = await fetch('/refine_song', {
@@ -92,14 +113,18 @@
 
                 const data = await response.json();
 
-                output.innerHTML += `
-                    <p class="mt-4"><strong>📝 Refined Lyrics:</strong></p>
-                    <pre class="whitespace-pre-wrap">${data.lyrics || 'No lyrics generated'}</pre>
-                    <p class="mt-4"><strong>🎵 Refined Melody:</strong></p>
-                    <pre class="whitespace-pre-wrap">${data.melody || 'No melody generated'}</pre>
-                `;
+                output.removeChild(loadingElement);
+                addDraftToOutput(`Refinement #${refinementCount}`, data.lyrics, data.melody);
+
+                // Clear refinement inputs for next iteration
+                lyricsRefinement.value = '';
+                melodyAdjustment.value = '';
             } catch (error) {
-                output.innerHTML += `<p class="text-red-500">Oops! Something went wrong: ${error.message}</p>`;
+                output.removeChild(loadingElement);
+                const errorElement = document.createElement('p');
+                errorElement.className = 'text-red-500';
+                errorElement.textContent = `Oops! Something went wrong: ${error.message}`;
+                output.insertBefore(errorElement, output.firstChild);
             }
         });
     </script>

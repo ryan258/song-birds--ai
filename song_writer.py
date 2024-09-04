@@ -25,19 +25,16 @@ class SongWriter:
         
         return song
 
-    async def refine_song(self, theme, lyrics_refine, melody_adjust):
-        # 📝 Step 1: Get the initial draft
-        initial_draft = await self.create_initial_draft(theme)
+    async def refine_song(self, current_song, lyrics_refine, melody_adjust):
+        # 🔄 Step 1: Refine and adjust based on current version
+        refined_lyrics = await self.lyricist.refine_lyrics(current_song['lyrics'], lyrics_refine)
+        refined_melody = await self.composer.adjust_melody(current_song['melody'], melody_adjust)
         
-        # 🔄 Step 2: Refine and adjust
-        refined_lyrics = await self.lyricist.refine_lyrics(initial_draft['lyrics'], lyrics_refine)
-        refined_melody = await self.composer.adjust_melody(initial_draft['melody'], melody_adjust)
-        
-        # 🎶 Step 3: Put it all together
+        # 🎶 Step 2: Put it all together
         refined_song = {
             "lyrics": refined_lyrics,
             "melody": refined_melody
         }
-        logging.info(f"Refined song with theme '{theme}': {refined_song}")
+        logging.info(f"Refined song: {refined_song}")
         
         return refined_song
