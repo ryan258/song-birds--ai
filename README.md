@@ -1,6 +1,6 @@
 # 🎵 Song Writer AI 🤖
 
-Welcome to Song Writer AI! This is a fun app that helps you create songs using artificial intelligence. It's like having a robot friend who loves music and wants to write songs with you!
+Welcome to Song Writer AI! This fun app helps you create songs using artificial intelligence. It's like having a robot friend who loves music and wants to write songs with you!
 
 ## 🌟 What Does It Do?
 
@@ -28,8 +28,9 @@ Imagine our app is like a big music factory with different rooms:
 4. **The Putting-It-All-Together Room (song_writer.py)**
    - This is where the lyrics and music style come together to make a complete song idea.
 
-5. **The Talking-to-AI Room (ollama.py)**
-   - This is like a telephone that lets our app talk to a very smart AI brain to get creative ideas.
+5. **The Talking-to-AI Room (ollama.py and openai_assistant.py)**
+   - These are like telephones that let our app talk to very smart AI brains to get creative ideas.
+   - You can choose which AI to use: Ollama (a local AI) or OpenAI (an online AI).
 
 6. **The Display Room (index.html)**
    - This is where you see the finished song on your computer or phone screen.
@@ -49,7 +50,8 @@ Imagine our app is like a big music factory with different rooms:
 - `lyricist.py`: Writes the song lyrics
 - `composer.py`: Comes up with the music style
 - `song_writer.py`: Puts the lyrics and style together
-- `ollama.py`: Talks to the AI for creative ideas
+- `ollama.py`: Talks to the Ollama AI for creative ideas
+- `openai_assistant.py`: Talks to the OpenAI API for creative ideas
 - `index.html`: Shows you the song on your screen
 
 ## 🛠️ Setting It Up
@@ -58,13 +60,53 @@ To make this app work on your computer, you need to:
 
 1. Install Python (a computer language)
 2. Install Poetry (helps manage the app)
-3. Install Ollama (the AI brain)
-4. Run some special commands to start everything
+3. Install Ollama (the local AI brain) - optional if you're using OpenAI
+4. Get an OpenAI API key (if you want to use OpenAI instead of Ollama)
 
-(Ask a grown-up or teacher for help with these steps!)
+Here are the steps:
+
+1. Install Python from [python.org](https://www.python.org/downloads/)
+2. Install Poetry by following instructions at [python-poetry.org](https://python-poetry.org/docs/#installation)
+3. Install Ollama from [ollama.ai](https://ollama.ai/download) (optional)
+4. Clone this repository:
+   ```
+   git clone https://github.com/your-username/song-writer-ai.git
+   cd song-writer-ai
+   ```
+5. Install the project dependencies:
+   ```
+   poetry install
+   ```
+6. Create a `.env` file in the project root and add your OpenAI API key (if using OpenAI):
+   ```
+   OPENAI_API_KEY=your_api_key_here
+   ```
+7. Run the app:
+   ```
+   poetry run python main.py
+   ```
+
+## 🔄 Switching between Ollama and OpenAI
+
+In `main.py`, you can change which AI the app uses:
+
+- For Ollama: `assistant = AIAssistant("ollama")`
+- For OpenAI: `assistant = AIAssistant("openai")`
+
+Make sure you have the necessary setup (Ollama installed or OpenAI API key) for the AI you choose.
 
 ## 🎉 Have Fun!
 
 Now you're ready to create amazing songs with your AI friend. Who knows, maybe you'll write the next big hit!
 
 Remember, the AI is very creative, but it's your ideas that make the songs special. Happy songwriting! 🎸🎤
+
+## 🐛 Troubleshooting
+
+If you run into any problems:
+1. Make sure all the required libraries are installed.
+2. Check that your `.env` file is set up correctly if using OpenAI.
+3. Ensure Ollama is running if you're using it.
+4. Look at the error messages in the console for clues about what might be wrong.
+
+If you're still stuck, ask a grown-up or teacher for help!

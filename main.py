@@ -1,4 +1,7 @@
-# This is the main.py file. It's like the boss of our song writing app.
+# File: main.py
+
+from dotenv import load_dotenv
+load_dotenv()  # This loads the variables from .env
 
 from flask import Flask, request, jsonify, send_from_directory
 import asyncio
@@ -6,17 +9,24 @@ from song_writer import SongWriter
 from lyricist import Lyricist
 from composer import Composer
 from ollama import Ollama
+from openai_assistant import OpenAIAssistant
 
 # Create our web app
 app = Flask(__name__, static_folder='frontend')
 
 # This is like a helper that knows how to write songs
 class AIAssistant:
-    def __init__(self):
+    def __init__(self, ai_type="openai"):
         # Set up our AI tools
-        self.ollama = Ollama(model="llama3.1:latest")
-        self.lyricist = Lyricist(self.ollama)
-        self.composer = Composer(self.ollama)
+        if ai_type == "ollama":
+            self.ai = Ollama(model="llama3.1:latest")
+        elif ai_type == "openai":
+            self.ai = OpenAIAssistant()
+        else:
+            raise ValueError("Unknown AI type. Please choose 'ollama' or 'openai'.")
+        
+        self.lyricist = Lyricist(self.ai)
+        self.composer = Composer(self.ai)
         self.song_writer = SongWriter(self.lyricist, self.composer)
         self.current_song = None
 
@@ -41,8 +51,8 @@ class AIAssistant:
         print("Improved song is ready!")
         return self.current_song
 
-# Create our AI helper
-assistant = AIAssistant()
+# Create our AI helper (you can change "ollama" to "openai" to use OpenAI instead)
+assistant = AIAssistant("openai")
 
 # When someone visits our website, show them the main page
 @app.route('/')

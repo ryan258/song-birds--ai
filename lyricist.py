@@ -1,76 +1,53 @@
-import os
+# File: lyricist.py
 
 class Lyricist:
-    def __init__(self, ollama):
-        self.ollama = ollama
-        self.prompt_template = """Embody the spirit of a legendary songwriter to craft a profound and memorable song about [THEME]. Your creation should:
+    def __init__(self, ai):
+        self.ai = ai
+        self.prompt_template = """Pretend you're a famous songwriter! Write a cool song about [THEME]. Your song should have:
 
-1. Title: Forge an intriguing, theme-resonant title that hooks the listener.
+1. A catchy title that makes people want to listen
+2. Verses that tell a story or describe something
+3. A chorus that repeats and is easy to remember
+4. Maybe a bridge that adds something new to the song
+5. An ending that wraps everything up
 
-2. Structure:
-   - Verse 1: Set the scene, introduce the core concept
-   - Chorus: Distill the song's essence, make it unforgettable
-   - Verse 2: Deepen the narrative, add layers to the theme
-   - Chorus: Repeat, allowing for slight variations if fitting
-   - Bridge: Offer a new perspective or twist
-   - Final Chorus: Deliver with heightened emotional impact
-
-3. Lyrical Craftsmanship:
-   - Employ vivid imagery and powerful metaphors
-   - Weave in clever wordplay and double meanings
-   - Use alliteration, assonance, and internal rhymes thoughtfully
-   - Vary line lengths and rhythms for dynamic flow
-
-4. Emotional Journey:
-   - Begin with a compelling hook or thought-provoking line
-   - Build emotional intensity throughout
-   - Culminate in a powerful, resonant ending
-
-5. Thematic Depth:
-   - Explore [THEME] from multiple angles
-   - Layer in subtext and deeper meanings
-   - Maintain thematic consistency while avoiding clichés
-
-6. Musical Considerations:
-   - Craft lyrics that lend themselves to melodic interpretation
-   - Consider potential for dynamic vocal delivery
-   - Leave room for instrumental sections where appropriate
-
-7. Universal Appeal:
-   - Balance specific details with universal emotions
-   - Create lines that invite personal interpretation
-
-Remember: Your lyrics should tell a story, evoke strong emotions, and leave a lasting impact. They should read like poetry and sing like a hit.
+Use your imagination and have fun with it! Here's the theme for your song:
 
 Theme: [THEME]
 
-Now, channel the muses and provide your complete, section-labeled masterpiece:
-"""
+Now, write your awesome song:"""
 
     async def generate_lyrics(self, theme):
-        # Use str.replace() for safe interpolation
+        # We replace [THEME] in our template with the actual theme
         prompt = self.prompt_template.replace('[THEME]', theme)
-        response = await self.ollama.generate(prompt)
+        response = await self.ai.generate(prompt)
         
-        print(f"Generated complete lyrics for theme: {theme}")
-        print(f"First 200 characters: {response[:200]}...")
+        if response is None:
+            print(f"Oops! We couldn't write a song about {theme} this time.")
+            return None
+        
+        print(f"Wrote a cool song about {theme}!")
+        print(f"Here's how it starts: {response[:200]}...")
         
         return response.strip()
 
     async def refine_lyrics(self, current_lyrics, feedback):
-        refine_prompt = f"""Refine the following lyrics based on this feedback. Maintain the complete song structure:
+        refine_prompt = f"""Let's make this song even better! Here's what we have so far:
 
-Current lyrics:
 {current_lyrics}
 
-Feedback:
+And here's what we want to change:
 {feedback}
 
-Please provide the complete refined lyrics:"""
+Can you rewrite the song with these changes? Make sure to keep the whole song structure!"""
 
-        response = await self.ollama.generate(refine_prompt)
+        response = await self.ai.generate(refine_prompt)
         
-        print(f"Refined lyrics based on feedback")
-        print(f"First 200 characters of refined lyrics: {response[:200]}...")
+        if response is None:
+            print("Oops! We couldn't improve the song this time.")
+            return None
+        
+        print(f"Made the song better based on the feedback!")
+        print(f"Here's how the new version starts: {response[:200]}...")
         
         return response.strip()

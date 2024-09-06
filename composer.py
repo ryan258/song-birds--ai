@@ -1,62 +1,58 @@
+# File: composer.py
+
 class Composer:
-    def __init__(self, ollama):
-        self.ollama = ollama
-        self.prompt_template = """You are a visionary music producer with an encyclopedic knowledge of genres, instruments, and production techniques. Craft a vivid, 120-character music style description for these lyrics:
+    def __init__(self, ai):
+        self.ai = ai
+        self.prompt_template = """Imagine you're a super cool music producer! You need to come up with an awesome music style for these song lyrics:
 
 {lyrics}
 
-Consider:
+Think about:
 
-1. Genre Fusion: Blend primary genre with unexpected influences.
-2. Emotional Palette: Capture the lyrics' mood and any emotional shifts.
-3. Rhythm & Tempo: Specify BPM range or descriptive term (e.g., "frenetic", "languid").
-4. Key Instruments: Name 2-3 defining sounds, including any unique choices.
-5. Production Elements: Highlight standout effects or techniques.
-6. Vocal Approach: Describe the vocal style and any distinctive treatments.
-7. Dynamic Journey: Hint at the song's energy progression.
-8. Cultural/Era Influences: Reference specific musical periods or cultural styles.
-9. Artist Parallels: Allude to iconic artists/tracks for style reference.
-10. Texture: Indicate overall sound quality (e.g., "ethereal", "gritty", "lush").
+1. What kind of music it should be (like pop, rock, hip-hop, etc.)
+2. What instruments would sound good
+3. How fast or slow the song should be
+4. If the song should be happy, sad, or somewhere in between
+5. Any special sound effects that might be fun to add
 
-Remember: Paint a sonic picture so vivid that a musician could hear the track just by reading your 120 characters. Make every word count.
-
-Now, distill this musical vision into a precise, evocative 120-character style description:"""
+Now, describe the perfect music style for this song in about 120 letters or less. Make it sound exciting!"""
 
     async def create_style_description(self, lyrics):
-        # Check if lyrics are provided and not too short
-        if not lyrics or len(lyrics) < 50:  # Arbitrary minimum length
-            return "Error: Insufficient lyrics provided. Please provide complete lyrics for an accurate style description."
+        # Check if we have enough lyrics to work with
+        if not lyrics or len(lyrics) < 50:
+            return "Oops! We need more lyrics to come up with a good music style. Can you write a bit more?"
 
-        # Truncate lyrics if they're too long to avoid overwhelming the AI
-        max_lyrics_length = 2000  # Adjust as needed
-        truncated_lyrics = lyrics[:max_lyrics_length] + ("..." if len(lyrics) > max_lyrics_length else "")
+        # If the lyrics are too long, we'll just use the first part
+        max_lyrics_length = 2000
+        short_lyrics = lyrics[:max_lyrics_length] + ("..." if len(lyrics) > max_lyrics_length else "")
 
-        prompt = self.prompt_template.format(lyrics=truncated_lyrics)
-        response = await self.ollama.generate(prompt)
+        prompt = self.prompt_template.format(lyrics=short_lyrics)
+        response = await self.ai.generate(prompt)
         
-        # Ensure the response is within the 120-character limit
+        # Make sure our description isn't too long
         style_description = response.strip()[:200]
         
-        print("Generated style description:")
+        print("Created an awesome music style:")
         print(style_description)
         
         return style_description
 
     async def refine_style_description(self, current_style, feedback):
-        refine_prompt = f"""Refine this 120-character music style description based on the feedback:
+        refine_prompt = f"""Let's make the music style even cooler! Here's what we have now:
 
-Current description: {current_style}
+Current style: {current_style}
 
-Feedback: {feedback}
+And here's how we want to change it:
+{feedback}
 
-Provide an improved 120-character style description:"""
+Can you describe a new and improved music style in about 120 letters?"""
 
-        response = await self.ollama.generate(refine_prompt)
+        response = await self.ai.generate(refine_prompt)
         
-        # Ensure the refined description is within the 120-character limit
+        # Make sure our new description isn't too long
         refined_style = response.strip()[:200]
         
-        print("Refined style description:")
+        print("Made the music style even better:")
         print(refined_style)
         
         return refined_style
