@@ -1,62 +1,76 @@
-# 📝 File: lyricist.py 📝
-import logging
-from logger import setup_logger
-
-setup_logger()
+import os
 
 class Lyricist:
     def __init__(self, ollama):
-        # 🤖 Our AI model
         self.ollama = ollama
+        self.prompt_template = """Embody the spirit of a legendary songwriter to craft a profound and memorable song about [THEME]. Your creation should:
+
+1. Title: Forge an intriguing, theme-resonant title that hooks the listener.
+
+2. Structure:
+   - Verse 1: Set the scene, introduce the core concept
+   - Chorus: Distill the song's essence, make it unforgettable
+   - Verse 2: Deepen the narrative, add layers to the theme
+   - Chorus: Repeat, allowing for slight variations if fitting
+   - Bridge: Offer a new perspective or twist
+   - Final Chorus: Deliver with heightened emotional impact
+
+3. Lyrical Craftsmanship:
+   - Employ vivid imagery and powerful metaphors
+   - Weave in clever wordplay and double meanings
+   - Use alliteration, assonance, and internal rhymes thoughtfully
+   - Vary line lengths and rhythms for dynamic flow
+
+4. Emotional Journey:
+   - Begin with a compelling hook or thought-provoking line
+   - Build emotional intensity throughout
+   - Culminate in a powerful, resonant ending
+
+5. Thematic Depth:
+   - Explore [THEME] from multiple angles
+   - Layer in subtext and deeper meanings
+   - Maintain thematic consistency while avoiding clichés
+
+6. Musical Considerations:
+   - Craft lyrics that lend themselves to melodic interpretation
+   - Consider potential for dynamic vocal delivery
+   - Leave room for instrumental sections where appropriate
+
+7. Universal Appeal:
+   - Balance specific details with universal emotions
+   - Create lines that invite personal interpretation
+
+Remember: Your lyrics should tell a story, evoke strong emotions, and leave a lasting impact. They should read like poetry and sing like a hit.
+
+Theme: [THEME]
+
+Now, channel the muses and provide your complete, section-labeled masterpiece:
+"""
 
     async def generate_lyrics(self, theme):
-        # 💡 Ask our AI to write lyrics
-        prompt = f"""Write lyrics for a song about {theme}. Follow these guidelines:
-1. Choose an appropriate genre based on the theme.
-2. Create a song structure typical for that genre (e.g., Verse-Chorus-Verse-Chorus-Bridge-Chorus for pop).
-3. Clearly label each section with [Verse], [Chorus], [Bridge], etc.
-4. Include vivid imagery and emotional language.
-5. Ensure a coherent narrative or message throughout the song.
-6. Use rhyme schemes appropriate for the chosen genre.
-7. Aim for 2-3 verses, 1 chorus (repeated 2-3 times), and optionally a bridge.
-8. Keep the total length between 20-30 lines.
-
-Begin your response with the chosen genre, then provide the lyrics.
-"""
-        response = await self.ollama.generate(prompt)  # Use the generate method
+        # Use str.replace() for safe interpolation
+        prompt = self.prompt_template.replace('[THEME]', theme)
+        response = await self.ollama.generate(prompt)
         
-        # ✨ Clean up the lyrics
-        lyrics = response.strip()
+        print(f"Generated complete lyrics for theme: {theme}")
+        print(f"First 200 characters: {response[:200]}...")
         
-        print("✏️ Lyrics are ready!")
-        logging.info(f"Generated lyrics for theme '{theme}': {lyrics}")
+        return response.strip()
 
-        return lyrics
+    async def refine_lyrics(self, current_lyrics, feedback):
+        refine_prompt = f"""Refine the following lyrics based on this feedback. Maintain the complete song structure:
 
-    async def refine_lyrics(self, lyrics, feedback):
-        # 🔧 Improve the lyrics based on feedback
-        prompt = f"""Refine these lyrics based on the following feedback:
+Current lyrics:
+{current_lyrics}
 
-Original Lyrics:
-{lyrics}
+Feedback:
+{feedback}
 
-Feedback: {feedback}
+Please provide the complete refined lyrics:"""
 
-Please apply the feedback while maintaining the original structure and essence of the song. Ensure you:
-1. Preserve the genre and overall theme.
-2. Maintain consistent labeling of sections ([Verse], [Chorus], etc.).
-3. Improve imagery, emotional impact, and wordplay where possible.
-4. Enhance the rhyme scheme and flow if needed.
-5. Address any specific points mentioned in the feedback.
-6. If adding or removing lines, ensure the song structure remains balanced.
-
-Provide the refined lyrics with clear section labels.
-"""
+        response = await self.ollama.generate(refine_prompt)
         
-        response = await self.ollama.generate(prompt)  # Use the generate method
+        print(f"Refined lyrics based on feedback")
+        print(f"First 200 characters of refined lyrics: {response[:200]}...")
         
-        refined_lyrics = response.strip()
-        
-        print("🎨 Lyrics have been polished!")
-        logging.info(f"Refined lyrics based on feedback '{feedback}': {refined_lyrics}")
-        return refined_lyrics
+        return response.strip()

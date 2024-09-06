@@ -1,4 +1,3 @@
-# 🎸 File: song_writer.py 🎸
 import logging
 from logger import setup_logger
 
@@ -10,30 +9,48 @@ class SongWriter:
         self.composer = composer
 
     async def create_initial_draft(self, theme):
-        # 📝 Step 1: Write initial lyrics
         lyrics = await self.lyricist.generate_lyrics(theme)
         
-        # 🎵 Step 2: Compose initial melody
-        melody = await self.composer.create_melody(lyrics)
+        if not lyrics or len(lyrics) < 50:  # Check for sufficient lyrics
+            logging.error(f"Insufficient lyrics generated for theme: {theme}")
+            return {"error": "Failed to generate sufficient lyrics. Please try again."}
+
+        style_description = await self.composer.create_style_description(lyrics)
         
-        # 🎶 Step 3: Put it all together
+        if style_description.startswith("Error:"):
+            logging.error(f"Failed to generate style description: {style_description}")
+            return {"error": style_description}
+
         song = {
             "lyrics": lyrics,
-            "melody": melody
+            "style_description": style_description
         }
         logging.info(f"Created initial draft with theme '{theme}': {song}")
         
         return song
 
-    async def refine_song(self, current_song, lyrics_refine, melody_adjust):
-        # 🔄 Step 1: Refine and adjust based on current version
-        refined_lyrics = await self.lyricist.refine_lyrics(current_song['lyrics'], lyrics_refine)
-        refined_melody = await self.composer.adjust_melody(current_song['melody'], melody_adjust)
+    async def refine_song(self, current_song, lyrics_feedback, style_feedback):
+        refined_lyrics = await self.lyricist.refine_lyrics(
+            current_song['lyrics'], 
+            lyrics_feedback
+        )
         
-        # 🎶 Step 2: Put it all together
+        if not refined_lyrics or len(refined_lyrics) < 50:
+            logging.error("Refinement resulted in insufficient lyrics")
+            return {"error": "Refinement failed. Please try different feedback."}
+
+        refined_style = await self.composer.refine_style_description(
+            current_song['style_description'], 
+            style_feedback
+        )
+        
+        if refined_style.startswith("Error:"):
+            logging.error(f"Failed to refine style description: {refined_style}")
+            return {"error": refined_style}
+
         refined_song = {
             "lyrics": refined_lyrics,
-            "melody": refined_melody
+            "style_description": refined_style
         }
         logging.info(f"Refined song: {refined_song}")
         

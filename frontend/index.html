@@ -3,144 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Song Writer AI</title>
+    <title>🎵 Song Writer AI 🤖</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 p-8">
-    <div class="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
-        <div class="p-8">
-            <h1 class="text-2xl font-bold mb-4">🎵 Song Writer AI 🤖</h1>
-            
-            <div id="initialForm">
-                <input type="text" id="themeInput" placeholder="Enter a theme for your song" class="w-full p-2 border rounded mb-4">
-                <button id="generateButton" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Write Initial Draft</button>
-            </div>
-            
-            <div id="refinementForm" class="hidden">
-                <input type="text" id="lyricsRefinement" placeholder="Lyrics refinement (e.g., Make it more upbeat)" class="w-full p-2 border rounded mb-4">
-                <input type="text" id="melodyAdjustment" placeholder="Melody adjustment (e.g., Add more rhythm)" class="w-full p-2 border rounded mb-4">
-                <button id="refineButton" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Refine Song</button>
-            </div>
-            
-            <div id="output" class="mt-4"></div>
+<body class="bg-gray-100">
+    <div class="max-w-4xl mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6 text-center">🎵 Song Writer AI 🤖</h1>
+
+        <!-- This is where we write a new song -->
+        <div id="initialForm" class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4">Write Initial Draft</h2>
+            <input type="text" id="theme" placeholder="Enter a theme for your song" class="w-full p-2 border rounded mb-4">
+            <button onclick="writeInitialDraft()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Generate Song</button>
         </div>
+
+        <!-- This is where we make the song better -->
+        <div id="refinementForm" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
+            <h2 class="text-xl font-semibold mb-4">Refine Song</h2>
+            <textarea id="lyricsFeedback" placeholder="Feedback for the lyrics" class="w-full p-2 border rounded mb-2" rows="3"></textarea>
+            <input type="text" id="styleFeedback" placeholder="Feedback for the style description" class="w-full p-2 border rounded mb-4">
+            <button onclick="refineSong()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Refine Song</button>
+        </div>
+
+        <!-- This is where we show the songs -->
+        <div id="output" class="space-y-6"></div>
     </div>
 
     <script>
-        const initialForm = document.getElementById('initialForm');
-        const refinementForm = document.getElementById('refinementForm');
-        const generateButton = document.getElementById('generateButton');
-        const refineButton = document.getElementById('refineButton');
-        const themeInput = document.getElementById('themeInput');
-        const lyricsRefinement = document.getElementById('lyricsRefinement');
-        const melodyAdjustment = document.getElementById('melodyAdjustment');
-        const output = document.getElementById('output');
+        let currentSong = null;
 
-        let refinementCount = 0;
+        // This makes a new song
+        async function writeInitialDraft() {
+            const theme = document.getElementById('theme').value;
+            const response = await fetch('/write_initial_draft', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ theme }),
+            });
+            const song = await response.json();
+            displaySong(song);
+            document.getElementById('refinementForm').classList.remove('hidden');
+        }
 
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Copied to clipboard!');
-            }, (err) => {
-                console.error('Could not copy text: ', err);
+        // This makes the song better
+        async function refineSong() {
+            const lyricsFeedback = document.getElementById('lyricsFeedback').value;
+            const styleFeedback = document.getElementById('styleFeedback').value;
+            const response = await fetch('/refine_song', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    lyricsFeedback, 
+                    styleFeedback 
+                }),
+            });
+            const song = await response.json();
+            displaySong(song);
+        }
+
+        // This shows the song on the page
+        function displaySong(song) {
+            currentSong = song;
+            const outputDiv = document.getElementById('output');
+            const songDiv = document.createElement('div');
+            songDiv.className = 'bg-white rounded-xl shadow-md p-6';
+            songDiv.innerHTML = `
+                <p class="text-sm text-gray-600 mb-4">${escapeHtml(song.style_description)}</p>
+                <pre class="whitespace-pre-wrap mb-4">${escapeHtml(song.lyrics)}</pre>
+                <div class="flex space-x-2">
+                    <button onclick="copyToClipboard('lyrics')" class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Copy Lyrics</button>
+                    <button onclick="copyToClipboard('style')" class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Copy Style</button>
+                </div>
+            `;
+            outputDiv.insertBefore(songDiv, outputDiv.firstChild);
+        }
+
+        // This copies the lyrics or style to your computer's clipboard
+        function copyToClipboard(type) {
+            if (!currentSong) {
+                alert('No song available to copy!');
+                return;
+            }
+
+            let textToCopy = type === 'lyrics' ? currentSong.lyrics : currentSong.style_description;
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert(`${type.charAt(0).toUpperCase() + type.slice(1)} copied to clipboard!`);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy text. See console for details.');
             });
         }
 
-        function addDraftToOutput(title, lyrics, melody) {
-            const draftElement = document.createElement('div');
-            draftElement.className = 'p-4 bg-gray-100 rounded mb-4';
-            draftElement.innerHTML = `
-                <h3 class="font-bold">${title}:</h3>
-                <div class="mt-2">
-                    <strong>📝 Lyrics:</strong>
-                    <button class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy Lyrics</button>
-                    <pre class="whitespace-pre-wrap mt-1">${lyrics || 'No lyrics generated'}</pre>
-                </div>
-                <div class="mt-2">
-                    <strong>🎵 Melody:</strong>
-                    <button class="ml-2 px-2 py-1 bg-blue-500 text-white rounded text-sm" onclick="copyToClipboard(this.nextElementSibling.textContent)">Copy Melody</button>
-                    <pre class="whitespace-pre-wrap mt-1">${melody || 'No melody generated'}</pre>
-                </div>
-            `;
-            output.insertBefore(draftElement, output.firstChild);
+        // This makes sure special characters show up correctly
+        function escapeHtml(unsafe) {
+            return unsafe
+                 .replace(/&/g, "&amp;")
+                 .replace(/</g, "&lt;")
+                 .replace(/>/g, "&gt;")
+                 .replace(/"/g, "&quot;")
+                 .replace(/'/g, "&#039;");
         }
-
-        generateButton.addEventListener('click', async () => {
-            const theme = themeInput.value;
-            
-            const loadingElement = document.createElement('div');
-            loadingElement.textContent = `🎨 Starting to write a song about "${theme}"...`;
-            output.insertBefore(loadingElement, output.firstChild);
-
-            try {
-                const response = await fetch('/write_initial_draft', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ theme }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Something went wrong');
-                }
-
-                const data = await response.json();
-
-                output.removeChild(loadingElement);
-                addDraftToOutput('Initial Draft', data.lyrics, data.melody);
-
-                initialForm.classList.add('hidden');
-                refinementForm.classList.remove('hidden');
-            } catch (error) {
-                output.removeChild(loadingElement);
-                const errorElement = document.createElement('p');
-                errorElement.className = 'text-red-500';
-                errorElement.textContent = `Oops! Something went wrong: ${error.message}`;
-                output.insertBefore(errorElement, output.firstChild);
-            }
-        });
-
-        refineButton.addEventListener('click', async () => {
-            const theme = themeInput.value;
-            const lyricsRefine = lyricsRefinement.value || "Make it more upbeat";
-            const melodyAdjust = melodyAdjustment.value || "Add more rhythm";
-            
-            refinementCount++;
-
-            const loadingElement = document.createElement('div');
-            loadingElement.textContent = `🔄 Refining the song (Refinement #${refinementCount})...`;
-            output.insertBefore(loadingElement, output.firstChild);
-
-            try {
-                const response = await fetch('/refine_song', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ theme, lyricsRefine, melodyAdjust }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Something went wrong');
-                }
-
-                const data = await response.json();
-
-                output.removeChild(loadingElement);
-                addDraftToOutput(`Refinement #${refinementCount}`, data.lyrics, data.melody);
-
-                // Clear refinement inputs for next iteration
-                lyricsRefinement.value = '';
-                melodyAdjustment.value = '';
-            } catch (error) {
-                output.removeChild(loadingElement);
-                const errorElement = document.createElement('p');
-                errorElement.className = 'text-red-500';
-                errorElement.textContent = `Oops! Something went wrong: ${error.message}`;
-                output.insertBefore(errorElement, output.firstChild);
-            }
-        });
     </script>
 </body>
 </html>

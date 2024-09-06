@@ -1,67 +1,62 @@
-# 🎼 File: composer.py 🎼
-import logging
-from logger import setup_logger
-
-setup_logger()
-
 class Composer:
     def __init__(self, ollama):
-        # 🤖 Our AI model
         self.ollama = ollama
-
-    async def create_melody(self, lyrics):
-        # 🎵 Ask our AI to describe a melody
-        prompt = f"""Create a melody description for these lyrics:
+        self.prompt_template = """You are a visionary music producer with an encyclopedic knowledge of genres, instruments, and production techniques. Craft a vivid, 120-character music style description for these lyrics:
 
 {lyrics}
 
-Please follow these guidelines:
-1. Analyze the mood and theme of the lyrics.
-2. Choose a key signature that fits the emotional tone.
-3. Determine an appropriate tempo (e.g., Andante, Allegro).
-4. For each section ([Verse], [Chorus], [Bridge]):
-   a. Describe the melodic contour (e.g., ascending, descending, arching).
-   b. Specify pitch ranges (e.g., low, middle, high).
-   c. Outline the rhythm, including note durations and any syncopation.
-   d. Suggest dynamic changes (e.g., crescendo, diminuendo).
-5. Indicate any repetitive melodic motifs or hooks.
-6. Describe the harmony, including chord progressions if applicable.
-7. Suggest instrumentation that would complement the melody.
+Consider:
 
-Format your response as a structured description, clearly labeling each section of the song."""
-        response = await self.ollama.generate(prompt)  # Use the generate method
+1. Genre Fusion: Blend primary genre with unexpected influences.
+2. Emotional Palette: Capture the lyrics' mood and any emotional shifts.
+3. Rhythm & Tempo: Specify BPM range or descriptive term (e.g., "frenetic", "languid").
+4. Key Instruments: Name 2-3 defining sounds, including any unique choices.
+5. Production Elements: Highlight standout effects or techniques.
+6. Vocal Approach: Describe the vocal style and any distinctive treatments.
+7. Dynamic Journey: Hint at the song's energy progression.
+8. Cultural/Era Influences: Reference specific musical periods or cultural styles.
+9. Artist Parallels: Allude to iconic artists/tracks for style reference.
+10. Texture: Indicate overall sound quality (e.g., "ethereal", "gritty", "lush").
+
+Remember: Paint a sonic picture so vivid that a musician could hear the track just by reading your 120 characters. Make every word count.
+
+Now, distill this musical vision into a precise, evocative 120-character style description:"""
+
+    async def create_style_description(self, lyrics):
+        # Check if lyrics are provided and not too short
+        if not lyrics or len(lyrics) < 50:  # Arbitrary minimum length
+            return "Error: Insufficient lyrics provided. Please provide complete lyrics for an accurate style description."
+
+        # Truncate lyrics if they're too long to avoid overwhelming the AI
+        max_lyrics_length = 2000  # Adjust as needed
+        truncated_lyrics = lyrics[:max_lyrics_length] + ("..." if len(lyrics) > max_lyrics_length else "")
+
+        prompt = self.prompt_template.format(lyrics=truncated_lyrics)
+        response = await self.ollama.generate(prompt)
         
-        melody = response.strip()
+        # Ensure the response is within the 120-character limit
+        style_description = response.strip()[:200]
         
-        print("🎶 Melody is composed!")
-        logging.info(f"Created melody for lyrics: {melody}")
-        return melody
+        print("Generated style description:")
+        print(style_description)
+        
+        return style_description
 
-    async def adjust_melody(self, melody, feedback):
-        # 🔧 Improve the melody based on feedback
-        prompt = f"""Adjust this melody based on the following feedback:
+    async def refine_style_description(self, current_style, feedback):
+        refine_prompt = f"""Refine this 120-character music style description based on the feedback:
 
-Original Melody Description:
-{melody}
+Current description: {current_style}
 
 Feedback: {feedback}
 
-Please apply the feedback while maintaining the core musical ideas. Ensure you:
-1. Preserve the overall style and mood of the original melody.
-2. Maintain the song structure (verse, chorus, bridge, etc.).
-3. Adjust pitch, rhythm, or harmonic elements as suggested by the feedback.
-4. If changing key or tempo, explain the rationale.
-5. Address any specific points mentioned in the feedback.
-6. Ensure the adjusted melody still complements the lyrics.
+Provide an improved 120-character style description:"""
 
-Provide the adjusted melody description with clear labels for each section.
-"""
+        response = await self.ollama.generate(refine_prompt)
         
-        response = await self.ollama.generate(prompt)  # Use the generate method
+        # Ensure the refined description is within the 120-character limit
+        refined_style = response.strip()[:200]
         
-        adjusted_melody = response.strip()
+        print("Refined style description:")
+        print(refined_style)
         
-        print("🎵 Melody has been fine-tuned!")
-        logging.info(f"Adjusted melody based on feedback '{feedback}': {adjusted_melody}")
-        
-        return adjusted_melody
+        return refined_style
