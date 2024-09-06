@@ -3,19 +3,27 @@
 class Lyricist:
     def __init__(self, ai):
         self.ai = ai
-        self.prompt_template = """Pretend you're a famous songwriter! Write a cool song about [THEME]. Your song should have:
+        self.prompt_template = """You are a world-renowned songwriter with a unique ability to capture emotions and tell compelling stories through your lyrics. Your task is to create an extraordinary song based on the theme: [THEME].
 
-1. A catchy title that makes people want to listen
-2. Verses that tell a story or describe something
-3. A chorus that repeats and is easy to remember
-4. Maybe a bridge that adds something new to the song
-5. An ending that wraps everything up
+Your song should include:
 
-Use your imagination and have fun with it! Here's the theme for your song:
+1. An attention-grabbing title that encapsulates the essence of the song
+2. Verses that weave a narrative or paint vivid imagery, using metaphors and sensory details
+3. A memorable chorus with a powerful hook that resonates emotionally
+4. A bridge that adds depth or offers a new perspective on the theme
+5. A satisfying conclusion that ties the song's elements together
+
+Consider the following to elevate your songwriting:
+
+- Employ varied rhyme schemes and rhythmic patterns to add complexity
+- Use literary devices such as alliteration, assonance, or personification
+- Incorporate unexpected twists or moments of revelation
+- Balance specificity and universality to make the song relatable yet unique
+- Consider the emotional journey of the listener throughout the song
 
 Theme: [THEME]
 
-Now, write your awesome song:"""
+Now, channel your creativity and craft a song that will move hearts and minds:"""
 
     async def generate_lyrics(self, theme):
         # We replace [THEME] in our template with the actual theme
@@ -32,14 +40,21 @@ Now, write your awesome song:"""
         return response.strip()
 
     async def refine_lyrics(self, current_lyrics, feedback):
-        refine_prompt = f"""Let's make this song even better! Here's what we have so far:
+        refine_prompt = f"""As our expert songwriter, your task is to elevate this song to new heights of creativity and emotional impact. Here's our current version:
 
 {current_lyrics}
 
-And here's what we want to change:
+We've received the following feedback for improvement:
 {feedback}
 
-Can you rewrite the song with these changes? Make sure to keep the whole song structure!"""
+Your mission:
+1. Carefully analyze the feedback and the current lyrics.
+2. Implement the suggested changes while preserving the song's core message and emotional resonance.
+3. Take creative liberty to enhance other aspects of the song that complement the requested changes.
+4. Ensure the refined lyrics maintain or improve upon the song's structure, flow, and coherence.
+5. Aim to surprise and delight with unexpected twists or deeper emotional connections.
+
+Please provide the refined version of the entire song, showcasing your mastery in songwriting and your ability to transform feedback into lyrical gold."""
 
         response = await self.ai.generate(refine_prompt)
         
