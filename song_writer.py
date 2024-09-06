@@ -14,24 +14,24 @@ class SongWriter:
         lyrics = await self.lyricist.generate_lyrics(theme)
         
         if lyrics is None:
-            logging.error(f"Failed to generate lyrics for theme: {theme}")
+            logging.error("Failed to generate lyrics. Please try again.")
             return {"error": "Failed to generate lyrics. Please try again."}
 
         if len(lyrics) < 50:  # Check for sufficient lyrics
-            logging.error(f"Insufficient lyrics generated for theme: {theme}")
+            logging.error("Generated lyrics were too short. Please try again.")
             return {"error": "Generated lyrics were too short. Please try again."}
 
         style_description = await self.composer.create_style_description(lyrics)
         
         if style_description is None:
-            logging.error(f"Failed to generate style description for theme: {theme}")
+            logging.error("Failed to generate style description. Please try again.")
             return {"error": "Failed to generate style description. Please try again."}
 
         song = {
             "lyrics": lyrics,
             "style_description": style_description
         }
-        logging.info(f"Created initial draft with theme '{theme}': {song}")
+        logging.info(f"Created initial draft:\n\nLyrics:\n{lyrics}\n\nStyle Description:\n{style_description}")
         
         return song
 
@@ -42,11 +42,11 @@ class SongWriter:
         )
         
         if refined_lyrics is None:
-            logging.error("Failed to refine lyrics")
+            logging.error("Failed to refine lyrics. Please try again with different feedback.")
             return {"error": "Failed to refine lyrics. Please try again with different feedback."}
 
         if len(refined_lyrics) < 50:
-            logging.error("Refinement resulted in insufficient lyrics")
+            logging.error("Refined lyrics were too short. Please try again with different feedback.")
             return {"error": "Refined lyrics were too short. Please try again with different feedback."}
 
         refined_style = await self.composer.refine_style_description(
@@ -55,13 +55,13 @@ class SongWriter:
         )
         
         if refined_style is None:
-            logging.error("Failed to refine style description")
+            logging.error("Failed to refine style description. Please try again with different feedback.")
             return {"error": "Failed to refine style description. Please try again with different feedback."}
 
         refined_song = {
             "lyrics": refined_lyrics,
             "style_description": refined_style
         }
-        logging.info(f"Refined song: {refined_song}")
+        logging.info(f"Refined song:\n\nLyrics:\n{refined_lyrics}\n\nStyle Description:\n{refined_style}")
         
         return refined_song
