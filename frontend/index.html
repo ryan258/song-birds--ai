@@ -5,108 +5,114 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎵 Song Writer AI 🤖</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 min-h-screen">
     <div class="max-w-4xl mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6 text-center">🎵 Song Writer AI 🤖</h1>
+        <h1 id="song-writer-ai" class="text-3xl font-bold mb-6 text-center">🎵 Song Writer AI 🤖</h1>
 
-        <!-- This is where we write a new song -->
         <div id="initialForm" class="bg-white rounded-xl shadow-md p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-4">Write Initial Draft</h2>
-            <input type="text" id="theme" placeholder="Enter a theme for your song" class="w-full p-2 border rounded mb-4">
-            <button onclick="writeInitialDraft()" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Generate Song</button>
+            <h2 id="write-initial-draft" class="text-xl font-semibold mb-4">Write Initial Draft</h2>
+            <div class="mb-4">
+                <label for="theme" class="block text-sm font-medium text-gray-700">Theme:</label>
+                <input type="text" id="theme" name="theme" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+            </div>
+            <button onclick="generateSong()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Generate Song
+            </button>
         </div>
 
-        <!-- This is where we make the song better -->
         <div id="refinementForm" class="bg-white rounded-xl shadow-md p-6 mb-6 hidden">
-            <h2 class="text-xl font-semibold mb-4">Refine Song</h2>
-            <textarea id="lyricsFeedback" placeholder="Feedback for the lyrics" class="w-full p-2 border rounded mb-2" rows="3"></textarea>
-            <input type="text" id="styleFeedback" placeholder="Feedback for the style description" class="w-full p-2 border rounded mb-4">
-            <button onclick="refineSong()" class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Refine Song</button>
+            <h2 id="refine-song" class="text-xl font-semibold mb-4">Refine Song</h2>
+            <div class="mb-4">
+                <label for="lyricsFeedback" class="block text-sm font-medium text-gray-700">Lyrics Feedback:</label>
+                <textarea id="lyricsFeedback" name="lyricsFeedback" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="styleFeedback" class="block text-sm font-medium text-gray-700">Style Feedback:</label>
+                <textarea id="styleFeedback" name="styleFeedback" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+            </div>
+            <button onclick="refineSong()" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                Refine Song
+            </button>
         </div>
 
-        <!-- This is where we show the songs -->
         <div id="output" class="space-y-6"></div>
     </div>
 
     <script>
-        let currentSong = null;
+        let currentIteration = 0;
 
-        // This makes a new song
-        async function writeInitialDraft() {
+        function generateSong() {
             const theme = document.getElementById('theme').value;
-            const response = await fetch('/write_initial_draft', {
+            fetch('/write_initial_draft', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ theme }),
+                body: JSON.stringify({ theme: theme }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                displaySong(data, ++currentIteration);
+                document.getElementById('refinementForm').classList.remove('hidden');
+            })
+            .catch((error) => {
+                console.error('Error:', error);
             });
-            const song = await response.json();
-            displaySong(song);
-            document.getElementById('refinementForm').classList.remove('hidden');
         }
 
-        // This makes the song better
-        async function refineSong() {
+        function refineSong() {
             const lyricsFeedback = document.getElementById('lyricsFeedback').value;
             const styleFeedback = document.getElementById('styleFeedback').value;
-            const response = await fetch('/refine_song', {
+            fetch('/refine_song', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    lyricsFeedback, 
-                    styleFeedback 
-                }),
+                body: JSON.stringify({ lyricsFeedback: lyricsFeedback, styleFeedback: styleFeedback }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                displaySong(data, ++currentIteration);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
             });
-            const song = await response.json();
-            displaySong(song);
         }
 
-        // This shows the song on the page
-        function displaySong(song) {
-            currentSong = song;
+        function displaySong(song, iteration) {
             const outputDiv = document.getElementById('output');
             const songDiv = document.createElement('div');
-            songDiv.className = 'bg-white rounded-xl shadow-md p-6';
+            songDiv.className = 'bg-white rounded-xl shadow-md p-6 mb-6';
             songDiv.innerHTML = `
-                <p class="text-sm text-gray-600 mb-4">${escapeHtml(song.style_description)}</p>
-                <pre class="whitespace-pre-wrap mb-4">${escapeHtml(song.lyrics)}</pre>
-                <div class="flex space-x-2">
-                    <button onclick="copyToClipboard('lyrics')" class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Copy Lyrics</button>
-                    <button onclick="copyToClipboard('style')" class="bg-gray-200 px-3 py-1 rounded hover:bg-gray-300">Copy Style</button>
+                <h3 class="text-lg font-semibold mb-2">Iteration ${iteration}</h3>
+                <div class="mb-4">
+                    <h4 class="text-md font-medium mb-2">Lyrics:</h4>
+                    <div class="whitespace-pre-wrap" id="lyrics-${iteration}">${song.lyrics}</div>
+                    <button onclick="copyToClipboard('lyrics-${iteration}')" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
+                        Copy Lyrics
+                    </button>
+                </div>
+                <div>
+                    <h4 class="text-md font-medium mb-2">Style Description:</h4>
+                    <div id="style-${iteration}">${song.style_description}</div>
+                    <button onclick="copyToClipboard('style-${iteration}')" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded text-sm">
+                        Copy Style
+                    </button>
                 </div>
             `;
             outputDiv.insertBefore(songDiv, outputDiv.firstChild);
         }
 
-        // This copies the lyrics or style to your computer's clipboard
-        function copyToClipboard(type) {
-            if (!currentSong) {
-                alert('No song available to copy!');
-                return;
-            }
-
-            let textToCopy = type === 'lyrics' ? currentSong.lyrics : currentSong.style_description;
-
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                alert(`${type.charAt(0).toUpperCase() + type.slice(1)} copied to clipboard!`);
+        function copyToClipboard(elementId) {
+            const element = document.getElementById(elementId);
+            const text = element.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
             }).catch(err => {
-                console.error('Failed to copy text: ', err);
-                alert('Failed to copy text. See console for details.');
+                console.error('Error in copying text: ', err);
             });
-        }
-
-        // This makes sure special characters show up correctly
-        function escapeHtml(unsafe) {
-            return unsafe
-                 .replace(/&/g, "&amp;")
-                 .replace(/</g, "&lt;")
-                 .replace(/>/g, "&gt;")
-                 .replace(/"/g, "&quot;")
-                 .replace(/'/g, "&#039;");
         }
     </script>
 </body>
